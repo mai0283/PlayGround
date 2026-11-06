@@ -37,7 +37,8 @@
     }
   }
   function freshGame(){
-    night=1; coins=0; kills=0; nightKills=0; elapsed=0; spawnLeft=0; enemies=[]; bullets=[]; particles=[]; boss=null;
+    night=1; coins=0; kills=0; nightKills=0; elapsed=0; spawnLeft=0; spawnTimer=0; fireTimer=0; reloadTimer=0; hurtFlash=0; toastTimer=0; enemies=[]; bullets=[]; particles=[]; boss=null;
+    pointer.down=false; firingTouch=false; keys.clear(); ui.reload.hidden=true; ui.toast.hidden=true;
     player={x:W/2,y:H*.57,r:11,hp:100,maxHp:100,ammo:12,reserve:48,aim:0,walk:0,hit:0};
     beginNight(1); mode='playing'; showGameplay(); updateHud();
   }
@@ -63,7 +64,7 @@
     const rx=W*.52,ry=H*.52;
     const x=clamp(W/2+Math.cos(angle)*rx,-pad,W+pad),y=clamp(H/2+Math.sin(angle)*ry,-pad,H+pad);
     let type='walker';
-    const r=Math.random();if(night>=2&&r<.28)type='runner';else if(night>=3&&r<.22)type='armored';
+    const r=Math.random();if(night>=2&&r<.28)type='runner';else if(night>=3&&r<.5)type='armored';
     const specs={walker:{hp:2,speed:rand(23,31)+night*.7,r:11,damage:8,color:'#829473',reward:5},runner:{hp:2,speed:rand(49,58)+night,r:9,damage:7,color:'#b8754e',reward:8},armored:{hp:5,speed:rand(18,23)+night*.4,r:13,damage:13,color:'#78817a',reward:13}}[type];
     enemies.push({x,y,...specs,maxHp:specs.hp,type,attack:rand(.1,1),walk:rand(0,8),hit:0,dead:false});
   }
@@ -105,7 +106,7 @@
     }
     if(boss){const a=Math.atan2(player.y-boss.y,player.x-boss.x),d=dist(boss,player);boss.hit=Math.max(0,boss.hit-dt);boss.x+=Math.cos(a)*Math.min(27,d*.55)*dt;boss.y+=Math.sin(a)*Math.min(27,d*.55)*dt;boss.attack-=dt;if(d<boss.r+player.r+7&&boss.attack<=0){damagePlayer(19);boss.attack=1.1;}}
     for(const b of bullets){b.x+=b.vx*dt;b.y+=b.vy*dt;b.life-=dt;
-      if(boss&&Math.hypot(b.x-boss.x,b.y-boss.y)<boss.r+4){boss.hp-=b.damage;boss.hit=.1;b.life=0;for(let i=0;i<3;i++)particles.push({x:b.x,y:b.y,vx:rand(-45,45),vy:rand(-45,45),life:.16,max:.16,color:'#ee8a58',size:3});if(boss.hp<=0){boss=null;coins+=100;kills++;nightKills++;updateHud();say('EL COLOSAL HA CAÍDO · +100 CHATARRA');setTimeout(()=>{if(mode==='playing')finish(true);},1200);}continue;}
+      if(boss&&Math.hypot(b.x-boss.x,b.y-boss.y)<boss.r+4){boss.hp-=b.damage;boss.hit=.1;b.life=0;for(let i=0;i<3;i++)particles.push({x:b.x,y:b.y,vx:rand(-45,45),vy:rand(-45,45),life:.16,max:.16,color:'#ee8a58',size:3});if(boss.hp<=0){boss=null;coins+=100;kills++;nightKills++;updateHud();say('EL COLOSAL HA CAÍDO · +100 CHATARRA');finish(true);}continue;}
       for(const e of enemies){if(!e.dead&&Math.hypot(b.x-e.x,b.y-e.y)<e.r+3){e.hp-=b.damage;e.hit=.12;b.life=0;if(e.hp<=0)killEnemy(e);break;}}
     }
     enemies=enemies.filter(e=>!e.dead);bullets=bullets.filter(b=>b.life>0&&b.x>-30&&b.x<W+30&&b.y>-30&&b.y<H+30);
