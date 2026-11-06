@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#101513">
+  <title>Zombie: Último Refugio</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="game-shell">
+    <canvas id="game" aria-label="Juego de supervivencia Zombie: Último Refugio"></canvas>
+    <div class="vignette"></div>
+    <header class="topbar" id="topbar" hidden>
+      <div class="brand-mark"><span class="brand-icon">✳</span><div><b>ÚLTIMO REFUGIO</b><small>SECTOR 07 · CIUDAD MUERTA</small></div></div>
+      <div class="night-badge"><span class="live-dot"></span><span id="nightLabel">NOCHE 1</span><i>—</i><span id="clockLabel">00:00</span></div>
+      <button class="icon-button" id="pauseButton" aria-label="Pausar">Ⅱ</button>
+    </header>
+    <section class="hud" id="hud" hidden>
+      <div class="hud-left">
+        <div class="stat-card health-card"><span class="stat-symbol">✚</span><div class="stat-copy"><label>ESTADO</label><div class="bar"><i id="healthBar"></i></div></div><b id="healthText">100</b></div>
+        <div class="stat-card ammo-card"><span class="stat-symbol">▰</span><div class="stat-copy"><label>MUNICIÓN</label><b id="ammoText">12 <small>/ 48</small></b></div></div>
+      </div>
+      <div class="hud-right">
+        <div class="stat-card kill-card"><span class="stat-symbol">☠</span><div class="stat-copy"><label>AMENAZAS</label><b id="zombieText">0</b></div></div>
+        <div class="stat-card coin-card"><span class="coin-icon">¢</span><div class="stat-copy"><label>CHATARRA</label><b id="coinText">0</b></div></div>
+      </div>
+      <div class="boss-bar" id="bossBar" hidden><div><span>EL COLOSAL</span><b id="bossHealthText">100%</b></div><i><em id="bossHealth"></em></i></div>
+    </section>
+    <div class="toast" id="toast" hidden></div>
+    <div class="reload-note" id="reloadNote" hidden>RECARGANDO <span>•••</span></div>
+    <div class="touch-controls" id="touchControls" hidden>
+      <div class="stick-zone" id="stickZone"><div class="stick-ring"><i id="stickKnob"></i></div><span>MOVER</span></div>
+      <button class="fire-button" id="fireButton"><span>✦</span><small>DISPARAR</small></button>
+    </div>
+    <section class="screen" id="menuScreen">
+      <div class="menu-content">
+        <div class="eyebrow"><span></span> ARCHIVO DE SUPERVIVIENTE · 07/31</div>
+        <h1>ZOMBIE:<br><span>ÚLTIMO</span><br>REFUGIO</h1>
+        <p class="intro">Cinco noches. Una ciudad muerta.<br>Y tú eres lo único que queda en pie.</p>
+        <button class="primary-button" id="playButton"><span>JUGAR</span><b>→</b></button>
+        <div class="menu-meta"><span>⌖  SECTOR 07</span><span>☾  NOCHE 1 DE 5</span></div>
+      </div>
+      <div class="survivor-card"><span class="card-label">ÚLTIMA TRANSMISIÓN</span><p>«No dejes que lleguen<br>al refugio. Pase lo que pase.»</p><div class="signal"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><small>SEÑAL PERDIDA · HACE 3 DÍAS</small></div>
+      <div class="menu-foot"><span>WASD / FLECHAS · MOUSE PARA APUNTAR</span><span>HECHO PARA SOBREVIVIR</span></div>
+    </section>
+    <section class="screen modal-screen" id="pauseScreen" hidden>
+      <div class="modal-card"><span class="eyebrow">⏸ &nbsp; REFUGIO TEMPORAL</span><h2>PAUSA</h2><p>La ciudad espera.<br>Los muertos también.</p><button class="primary-button" id="resumeButton"><span>SEGUIR SOBREVIVIENDO</span><b>→</b></button><button class="text-button" id="quitButton">VOLVER AL MENÚ</button></div>
+    </section>
+    <section class="screen modal-screen" id="shopScreen" hidden>
+      <div class="modal-card shop-card"><span class="eyebrow">☾ &nbsp; AMANECER · REFUGIO 07</span><h2 id="shopTitle">NOCHE SUPERADA</h2><p id="shopDescription">Has aguantado otra noche. Respira. Reabastécete.</p><div class="shop-wallet"><span>¢</span><b id="shopCoins">0</b><small>CHATARRA DISPONIBLE</small></div><div class="shop-items"><button class="shop-item" id="buyAmmo"><span class="item-icon">▰</span><span><b>Munición</b><small>+24 balas</small></span><strong>15 ¢</strong></button><button class="shop-item" id="buyMedkit"><span class="item-icon med">✚</span><span><b>Botiquín</b><small>Recupera 40 de vida</small></span><strong>20 ¢</strong></button></div><div class="shop-actions"><button class="primary-button" id="nextNightButton"><span>PREPARARSE PARA LA NOCHE 2</span><b>→</b></button><small>Podrás comprar hasta que caiga la noche.</small></div></div>
+    </section>
+    <section class="screen modal-screen" id="endScreen" hidden>
+      <div class="modal-card end-card"><span class="eyebrow" id="endEyebrow">TRANSMISIÓN FINAL</span><div class="end-emblem" id="endEmblem">✦</div><h2 id="endTitle">HAS SOBREVIVIDO</h2><p id="endMessage">La ciudad vuelve a respirar.</p><div class="end-stats"><span>NOCHES <b id="endNights">5 / 5</b></span><span>ELIMINADOS <b id="endKills">0</b></span><span>CHATARRA <b id="endCoins">0</b></span></div><button class="primary-button" id="restartButton"><span>VOLVER A INTENTAR</span><b>↻</b></button><button class="text-button" id="endMenuButton">MENÚ PRINCIPAL</button></div>
+    </section>
+    <div class="controls-hint" id="controlsHint" hidden><span>WASD</span> MOVER <i>·</i> <span>CLICK</span> DISPARAR <i>·</i> <span>R</span> RECARGAR</div>
+  </main>
+  <script src="game.js"></script>
+</body>
+</html>
