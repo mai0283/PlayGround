@@ -38,6 +38,9 @@
   }
   function freshGame(){
     night=1; coins=0; kills=0; nightKills=0; elapsed=0; spawnLeft=0; enemies=[]; bullets=[]; particles=[]; boss=null;
+    fireTimer=0; reloadTimer=0; hurtFlash=0; toastTimer=0; shake=0;
+    pointer.down=false; firingTouch=false; joystick.x=0; joystick.y=0; joystick.id=null; keys.clear();
+    $('stickKnob').style.transform='translate(0,0)'; ui.reload.hidden=true; ui.toast.hidden=true;
     player={x:W/2,y:H*.57,r:11,hp:100,maxHp:100,ammo:12,reserve:48,aim:0,walk:0,hit:0};
     beginNight(1); mode='playing'; showGameplay(); updateHud();
   }
@@ -46,7 +49,7 @@
     if(n===5){ spawnLeft=6; boss={x:W/2,y:-65,hp:180,maxHp:180,r:35,attack:0,hit:0}; }
     updateHud(); say(n===5?'NOCHE 5 · EL COLOSAL SE ACERCA':'NOCHE '+n+' · NO DEJES QUE TE ALCANCEN');
   }
-  function showGameplay(){ui.menu.hidden=true;ui.pause.hidden=true;ui.shop.hidden=true;ui.end.hidden=true;ui.topbar.hidden=false;ui.hud.hidden=false;ui.touch.hidden=!touchMode;ui.controlsHint.hidden=touchMode;}
+  function showGameplay(){ui.menu.hidden=true;ui.pause.hidden=true;ui.shop.hidden=true;ui.end.hidden=true;ui.topbar.hidden=false;ui.hud.hidden=false;ui.touch.hidden=!touchMode;ui.controlsHint.hidden=touchMode;ui.reload.hidden=reloadTimer<=0;}
   function say(text){ui.toast.textContent=text;ui.toast.hidden=false;toastTimer=2.2;}
   function updateHud(){
     if(!player)return;
@@ -84,7 +87,7 @@
   function reload(){if(reloadTimer>0||player.ammo===12||player.reserve<=0)return;reloadTimer=1.15;ui.reload.hidden=false;}
   function damagePlayer(amount){player.hp=Math.max(0,player.hp-amount);player.hit=.2;hurtFlash=.23;shake=Math.max(shake,5);if(player.hp<=0)finish(false);updateHud();}
   function killEnemy(e){e.dead=true;kills++;nightKills++;coins+=e.reward;for(let i=0;i<8;i++)particles.push({x:e.x,y:e.y,vx:rand(-65,65),vy:rand(-65,65),life:rand(.18,.48),max:.48,color:i%2?'#aab888':'#9c5946',size:rand(2,5)});say('+'+e.reward+' CHATARRA');updateHud();}
-  function finish(win){mode=win?'victory':'defeat';ui.topbar.hidden=true;ui.hud.hidden=true;ui.touch.hidden=true;ui.controlsHint.hidden=true;ui.end.hidden=false;ui.endEyebrow.textContent=win?'TRANSMISIÓN RESTAURADA':'TRANSMISIÓN INTERRUMPIDA';ui.endEmblem.textContent=win?'✦':'☠';ui.endEmblem.style.color=win?'#e5b65d':'#e8794d';ui.endTitle.textContent=win?'LA CIUDAD ES TUYA':'EL REFUGIO HA CAÍDO';ui.endMessage.textContent=win?'Cinco noches resistiendo. La señal vuelve a encenderse.':'La horda te ha superado. Aún puedes volver a intentarlo.';ui.endNights.textContent=(win?5:night)+' / 5';ui.endKills.textContent=kills;ui.endCoins.textContent=coins;}
+  function finish(win){mode=win?'victory':'defeat';pointer.down=false;firingTouch=false;ui.topbar.hidden=true;ui.hud.hidden=true;ui.touch.hidden=true;ui.controlsHint.hidden=true;ui.toast.hidden=true;ui.reload.hidden=true;ui.end.hidden=false;ui.endEyebrow.textContent=win?'TRANSMISIÓN RESTAURADA':'TRANSMISIÓN INTERRUMPIDA';ui.endEmblem.textContent=win?'✦':'☠';ui.endEmblem.style.color=win?'#e5b65d':'#e8794d';ui.endTitle.textContent=win?'LA CIUDAD ES TUYA':'EL REFUGIO HA CAÍDO';ui.endMessage.textContent=win?'Cinco noches resistiendo. La señal vuelve a encenderse.':'La horda te ha superado. Aún puedes volver a intentarlo.';ui.endNights.textContent=(win?5:night)+' / 5';ui.endKills.textContent=kills;ui.endCoins.textContent=coins;}
 
   function update(dt){
     if(mode!=='playing')return;
@@ -114,7 +117,7 @@
     if(night===5&&spawnLeft===0&&enemies.length===0&&!boss){finish(true);}
     updateHud();
   }
-  function showShop(){ui.topbar.hidden=true;ui.hud.hidden=true;ui.touch.hidden=true;ui.controlsHint.hidden=true;ui.shop.hidden=false;ui.shopCoins.textContent=coins;const next=night+1;ui.shopTitle.textContent='NOCHE '+night+' SUPERADA';ui.shopDescription.textContent=night===4?'El Colosal llega esta noche. Esta es tu última oportunidad.':'Has aguantado otra noche. Respira. Reabastécete.';ui.nextNightButton.querySelector('span').textContent=night===4?'ENFRENTAR AL COLOSAL':'PREPARARSE PARA LA NOCHE '+next;}
+  function showShop(){ui.topbar.hidden=true;ui.hud.hidden=true;ui.touch.hidden=true;ui.controlsHint.hidden=true;ui.toast.hidden=true;ui.reload.hidden=true;toastTimer=0;ui.shop.hidden=false;ui.shopCoins.textContent=coins;const next=night+1;ui.shopTitle.textContent='NOCHE '+night+' SUPERADA';ui.shopDescription.textContent=night===4?'El Colosal llega esta noche. Esta es tu última oportunidad.':'Has aguantado otra noche. Respira. Reabastécete.';ui.nextNightButton.querySelector('span').textContent=night===4?'ENFRENTAR AL COLOSAL':'PREPARARSE PARA LA NOCHE '+next;}
   function buy(price,type){if(coins<price){say('NO HAY SUFICIENTE CHATARRA');return;}if(type==='ammo'&&player.reserve>=96){say('RESERVA DE MUNICIÓN LLENA');return;}if(type==='med'&&player.hp>=100){say('YA TIENES LA VIDA AL MÁXIMO');return;}coins-=price;if(type==='ammo')player.reserve+=24;else player.hp=Math.min(100,player.hp+40);ui.shopCoins.textContent=coins;updateHud();}
 
   function rect(x,y,w,h,c){ctx.fillStyle=c;ctx.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h));}
@@ -181,7 +184,7 @@
     ctx.restore();if(hurtFlash>0){ctx.fillStyle='rgba(180,43,32,'+(hurtFlash*.36)+')';ctx.fillRect(0,0,W,H);}
   }
   function frame(t){const dt=Math.min(.04,(t-last)/1000||0);last=t;update(dt);draw();requestAnimationFrame(frame);}
-  function pauseGame(){if(mode!=='playing')return;mode='paused';ui.pause.hidden=false;ui.touch.hidden=true;ui.controlsHint.hidden=true;}
+  function pauseGame(){if(mode!=='playing')return;mode='paused';pointer.down=false;firingTouch=false;joystick.x=0;joystick.y=0;joystick.id=null;keys.clear();$('stickKnob').style.transform='translate(0,0)';ui.pause.hidden=false;ui.touch.hidden=true;ui.controlsHint.hidden=true;}
   function resumeGame(){if(mode!=='paused')return;mode='playing';ui.pause.hidden=true;ui.touch.hidden=!touchMode;ui.controlsHint.hidden=touchMode;last=performance.now();}
   $('playButton').addEventListener('click',freshGame);
   $('pauseButton').addEventListener('click',pauseGame);
